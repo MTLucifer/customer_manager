@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="jstl-1.2">
+    <CLASSES>
+      <root url="file://$USER_HOME$/Downloads/tomcat/JSTL Jars/jstl-1.2.jar" />
+      <root url="file://$USER_HOME$/Downloads/tomcat/JSTL Jars/jstl-impl-1.2.jar" />
+      <root url="file://$USER_HOME$/Downloads/tomcat/JSTL Jars/jstl-standard.jar" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$USER_HOME$/Downloads/tomcat/JSTL Jars/jstl-1.2.jar" recursive="false" />
+    <jarDirectory url="file://$USER_HOME$/Downloads/tomcat/JSTL Jars/jstl-impl-1.2.jar" recursive="false" />
+    <jarDirectory url="file://$USER_HOME$/Downloads/tomcat/JSTL Jars/jstl-standard.jar" recursive="false" />
+  </library>
+</component>

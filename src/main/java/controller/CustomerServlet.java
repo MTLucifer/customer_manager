@@ -11,14 +11,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 
 @WebServlet(name = "controller.CustomerServlet", urlPatterns = "/customers")
 public class CustomerServlet extends HttpServlet {
-    private CustomerService cs = new CustomerManagement();
+    private CustomerManagement cs = new CustomerManagement();
+
+
 
     private void listCustomers(HttpServletRequest request, HttpServletResponse response) {
-        List<Customer> customers = this.cs.findAll();
+        List<Customer> customers = this.cs.selectAllCustomers();
         request.setAttribute("customers", customers);
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("customer/list.jsp");
@@ -41,10 +46,18 @@ public class CustomerServlet extends HttpServlet {
                 createCustomer(request, response);
                 break;
             case "edit":
-                updateCustomer(request, response);
+                try {
+                    updateCustomer(request, response);
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
                 break;
             case "delete":
-                deleteCustomer(request,response);
+                try {
+                    deleteCustomer(request,response);
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
                 break;
             default:
                 break;
@@ -93,7 +106,7 @@ public class CustomerServlet extends HttpServlet {
         int id = (int) (Math.random() * 10000);
 
         Customer customer = new Customer(id, name, email, address);
-        this.cs.save(customer);
+        this.cs.insertCustomer(customer);
         RequestDispatcher dispatcher = request.getRequestDispatcher("customer/create.jsp");
         request.setAttribute("message", "New customer was created");
         try {
@@ -107,7 +120,7 @@ public class CustomerServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) {
         int id = Integer.parseInt(request.getParameter("id"));
-        Customer customer = this.cs.findById(id);
+        Customer customer = this.cs.selectCustomer(id);
         RequestDispatcher dispatcher;
         if (customer == null) {
             dispatcher = request.getRequestDispatcher("error-404.jsp");
@@ -124,12 +137,12 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-    private void updateCustomer(HttpServletRequest request, HttpServletResponse response) {
+    private void updateCustomer(HttpServletRequest request, HttpServletResponse response) throws SQLException {
         int id = Integer.parseInt(request.getParameter("id"));
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         String address = request.getParameter("address");
-        Customer customer = this.cs.findById(id);
+        Customer customer = this.cs.selectCustomer(id);
         RequestDispatcher dispatcher;
         if (customer == null) {
             dispatcher = request.getRequestDispatcher("error-404.jsp");
@@ -137,11 +150,15 @@ public class CustomerServlet extends HttpServlet {
             customer.setName(name);
             customer.setEmail(email);
             customer.setAddress(address);
-            this.cs.update(id, customer);
-            request.setAttribute("customer", customer);
-            request.setAttribute("message", "Customer information was updated");
-            dispatcher = request.getRequestDispatcher("customer/edit.jsp");
+            boolean isUpdated = this.cs.updateCustomer(customer);
+            if (isUpdated) {
+                request.setAttribute("customer", customer);
+                request.setAttribute("message", "Customer information was updated");
+            }
+            else
+                request.setAttribute("message", "Customer information was not updated");
         }
+        dispatcher = request.getRequestDispatcher("customer/edit.jsp");
         try {
             dispatcher.forward(request, response);
         } catch (ServletException e) {
@@ -153,7 +170,7 @@ public class CustomerServlet extends HttpServlet {
 
     private void showDeleteForm(HttpServletRequest request, HttpServletResponse response) {
         int id = Integer.parseInt(request.getParameter("id"));
-        Customer customer = this.cs.findById(id);
+        Customer customer = this.cs.selectCustomer(id);
         RequestDispatcher dispatcher;
         if (customer == null) {
             dispatcher = request.getRequestDispatcher("error-404.jsp");
@@ -170,14 +187,14 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-    private void deleteCustomer(HttpServletRequest request, HttpServletResponse response) {
+    private void deleteCustomer(HttpServletRequest request, HttpServletResponse response) throws SQLException {
         int id = Integer.parseInt(request.getParameter("id"));
-        Customer customer = this.cs.findById(id);
+        Customer customer = this.cs.selectCustomer(id);
         RequestDispatcher dispatcher;
         if (customer == null) {
             dispatcher = request.getRequestDispatcher("error-404.jsp");
         } else {
-            this.cs.remove(id);
+            this.cs.deleteCustomer(id);
             try {
                 response.sendRedirect("/customers");
             } catch (IOException e) {
@@ -187,7 +204,7 @@ public class CustomerServlet extends HttpServlet {
     }
     private void viewCustomer(HttpServletRequest request, HttpServletResponse response) {
         int id = Integer.parseInt(request.getParameter("id"));
-        Customer customer = this.cs.findById(id);
+        Customer customer = this.cs.selectCustomer(id);
         RequestDispatcher dispatcher;
         if(customer == null){
             dispatcher = request.getRequestDispatcher("error-404.jsp");

@@ -1,7 +1,7 @@
-service/CustomerService.java
- service.CustomerService
 model/Customer.java
  model.Customer
+service/CustomerService.java
+ service.CustomerService
 service/CustomerManagement.java
  service.CustomerManagement
 controller/CustomerServlet.java
